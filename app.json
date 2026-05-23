@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "Depot Bakso Asli Balikpapan",
+    "slug": "frontend-app",
+    "version": "1.0.0",
+    "web": {
+      "favicon": "./assets/images/logo_sapi.png"
+    },
+    "experiments": {
+      "tsconfigPaths": true
+    },
+    "plugins": [
+      "expo-secure-store"
+    ],
+    "orientation": "portrait",
+    "icon": "./assets/images/logo_sapi.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/images/logo_sapi.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "splash": {
+        "image": "./assets/images/logo_sapi.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/logo_sapi.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "splash": {
+        "image": "./assets/images/logo_sapi.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#FFFFFF"
+      }
+    }
+  }
+}
