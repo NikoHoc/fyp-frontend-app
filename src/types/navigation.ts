@@ -1,4 +1,5 @@
 import { NavigatorScreenParams } from '@react-navigation/native';
+import { CartItem, Menu } from '.';
 
 export type BottomTabParamList = {
   Home: undefined;
@@ -10,11 +11,15 @@ export type RootStackParamList = {
   Main: NavigatorScreenParams<BottomTabParamList>;
   Login: undefined;
   Register: undefined;
-  DepotMenu: { 
+  DepotMenuScreen: { 
     depotId: number; 
     depotName: string; 
   };
-  Cart: {
-    depotId: number;
+  MenuDetailScreen: { 
+    menu: Menu; 
+    depotId: number; 
+    mode: 'add' | 'edit'; 
+    existingItem?: CartItem;
   };
+  CartScreen: undefined;
 };

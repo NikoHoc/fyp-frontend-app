@@ -14,7 +14,7 @@ export default function DepotCard({ depot, isClosest }: DepotCardProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handlePress = () => {
-    navigation.navigate('DepotMenu', { 
+    navigation.navigate('DepotMenuScreen', { 
       depotId: depot.id, 
       depotName: depot.name 
     });

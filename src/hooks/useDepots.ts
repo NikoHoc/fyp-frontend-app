@@ -53,7 +53,7 @@ export const useDepots = () => {
 
       setDepots(depotsWithDistance);
     } catch (error) {
-      console.error("Gagal memuat data cabang:", error);
+      console.log("Gagal memuat data cabang:", error);
     } finally {
       setIsLoading(false);
     }

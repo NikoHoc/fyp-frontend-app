@@ -7,6 +7,7 @@ import RootNavigator from './src/navigation/RootNavigator';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, Dimensions } from 'react-native';
+import { CartProvider } from '@/context/CartContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -46,10 +47,12 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <NavigationContainer>
-          <RootNavigator />
-        </NavigationContainer>
-        <StatusBar style="auto" />
+        <CartProvider>
+          <NavigationContainer>
+            <RootNavigator />
+          </NavigationContainer>
+          <StatusBar style="auto" />
+        </CartProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

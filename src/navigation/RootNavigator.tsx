@@ -5,6 +5,7 @@ import LoginScreen from '../screens/auth/LoginScreen'
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import DepotMenuScreen from '../screens/depot/DepotMenuScreen'
 import CartScreen from '../screens/cart/CartScreen';
+import MenuDetailScreen from '../screens/menu/MenuDetailScreen'
 import { RootStackParamList } from '../types/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -17,8 +18,10 @@ export default function RootNavigator() {
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
 
-      <Stack.Screen name="DepotMenu" component={DepotMenuScreen} />
-      <Stack.Screen name="Cart" component={CartScreen} />
+      <Stack.Screen name="DepotMenuScreen" component={DepotMenuScreen} />
+      
+      <Stack.Screen name="MenuDetailScreen" component={MenuDetailScreen} />
+      <Stack.Screen name="CartScreen" component={CartScreen} />
     </Stack.Navigator>
   );
 }
