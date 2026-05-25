@@ -12,8 +12,8 @@ import { useDepotDetail } from '@/hooks/useDepotDetail';
 export default function CartScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { cart, updateItem, isLoading, fetchCart } = useContext(CartContext);
 
+  const { cart, updateItem, isLoading, fetchCart, checkout } = useContext(CartContext);
   const { depot, isLoading: isDepotLoading } = useDepotDetail(cart?.depot_id ?? 0);
 
   const [pickupMethod, setPickupMethod] = useState<'self_pickup' | 'self_courier'>('self_pickup');
@@ -71,8 +71,30 @@ export default function CartScreen() {
     );
   };
 
-  const handleCheckout = () => {
-    Alert.alert("Segera Hadir", "Fitur kirim ke kasir akan kita buat di tahap selanjutnya!");
+  const handleCheckout = async () => {
+    Alert.alert(
+      "Kirim Pesanan",
+      "Apakah Anda yakin ingin mengirim pesanan ini ke kasir?",
+      [
+        { text: "Batal", style: "cancel" },
+        {
+          text: "Ya, Kirim",
+          onPress: async () => {
+            const response = await checkout(pickupMethod);
+            
+            if (response.success && response.transaction_id) {
+              navigation.reset({
+                index: 1,
+                routes: [
+                  { name: 'Main' },
+                  { name: 'OrderTrackingScreen', params: { transactionId: response.transaction_id } }
+                ],
+              });
+            }
+          }
+        }
+      ]
+    );
   };
 
   return (

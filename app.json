@@ -3,6 +3,7 @@
     "name": "Depot Bakso Asli Balikpapan",
     "slug": "frontend-app",
     "version": "1.0.0",
+    "scheme": "depot-bakso-asli",
     "web": {
       "favicon": "./assets/images/logo_sapi.png"
     },

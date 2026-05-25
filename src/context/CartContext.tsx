@@ -9,6 +9,7 @@ interface CartContextType {
   fetchCart: () => Promise<void>;
   updateItem: (depotId: number, menuId: number, quantity: number, isHalfPortion?: boolean, note?: string, cartItemId?: number) => Promise<{ success: boolean; conflict?: boolean }>;
   clearCartAndRetry: (depotId: number, menuId: number, quantity: number, isHalfPortion: boolean, note: string, cartItemId?: number) => Promise<{ success: boolean }>;
+  checkout: (pickupMethod: string) => Promise<{ success: boolean; transaction_id?: string }>;
   clearCart: () => Promise<any>;
   getItemQuantity: (menuId: number, depotId: number) => number;
 }

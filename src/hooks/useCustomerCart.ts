@@ -35,7 +35,7 @@ export const useCustomerCart = () => {
       if (!cartItemId) {
         setIsLoading(false);
       }
-      
+
       return { success: true };
     } catch (error: any) {
       setIsLoading(false);
@@ -71,6 +71,24 @@ export const useCustomerCart = () => {
     }
   };
 
+  const checkout = async (pickupMethod: string): Promise<{ success: boolean; transaction_id?: string }> => {
+    setIsLoading(true);
+    try {
+      const response = await cartService.checkoutCart(pickupMethod);
+      if (response.success) {
+        await fetchCart();
+        setIsLoading(false);
+        return { success: true, transaction_id: response.data.transaction_id };
+      }
+      setIsLoading(false);
+      return { success: false };
+    } catch (error: any) {
+      setIsLoading(false);
+      Alert.alert("Gagal Checkout", error.response?.data?.message || "Terjadi kesalahan pada sistem.");
+      return { success: false };
+    }
+  };
+
   return {
     cart,
     setCart,
@@ -78,6 +96,7 @@ export const useCustomerCart = () => {
     fetchCart,
     updateItem,
     clearCartAndRetry,
+    checkout,
     clearCart: cartService.clearCart
   };
 };

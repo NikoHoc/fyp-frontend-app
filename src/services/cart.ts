@@ -31,5 +31,12 @@ export const cartService = {
   clearCart: async () => {
     const response = await api.delete('/customers/me/cart');
     return response.data;
+  },
+
+  checkoutCart: async (pickupMethod: string) => {
+    const response = await api.post('/customers/me/checkout', {
+      pickup_method: pickupMethod
+    });
+    return response.data;
   }
 };

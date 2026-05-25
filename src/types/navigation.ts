@@ -22,4 +22,5 @@ export type RootStackParamList = {
     existingItem?: CartItem;
   };
   CartScreen: undefined;
+  OrderTrackingScreen: { transactionId: string };
 };
