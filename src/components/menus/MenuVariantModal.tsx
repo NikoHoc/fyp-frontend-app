@@ -46,7 +46,7 @@ export default function MenuVariantModal({ isVisible, onClose, menu, existingIte
                   ) : null}
                   <Text className="text-sm font-black text-bakso-primary mt-1">Rp {item.price.toLocaleString('id-ID')}</Text>
                 </View>
-                <View className="bg-white p-2 rounded-xl shadow-sm">
+                <View className="bg-white p-2 rounded-xl">
                   <Edit2 size={16} color="#DC2626" />
                 </View>
               </TouchableOpacity>

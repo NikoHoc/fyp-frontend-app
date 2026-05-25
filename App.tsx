@@ -46,8 +46,8 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <AuthProvider>
+      <NavigationContainer>   
+        <AuthProvider>      
           <CartProvider>
             <RootNavigator />
             <StatusBar style="auto" />

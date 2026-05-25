@@ -58,7 +58,9 @@ export default function MenuDetailScreen({ route, navigation }: any) {
     const result = await updateItem(depotId, menu.id, quantity, finalHalfPortion, note, cartItemId);
 
     if (result.success) {
-      navigation.goBack();
+      setTimeout(() => {
+        navigation.goBack();
+      }, 100);
       return;
     }
 
@@ -81,7 +83,7 @@ export default function MenuDetailScreen({ route, navigation }: any) {
                 cartItemId
               );
               if (retryResult.success) {
-                navigation.goBack();
+                setTimeout(() => navigation.goBack(), 100);
               }
             },
           },
@@ -191,12 +193,12 @@ export default function MenuDetailScreen({ route, navigation }: any) {
       </ScrollView>
 
       <View
-        className="flex-row items-center gap-4 border-t border-gray-100 bg-white p-4 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]"
+        className="flex-row items-center gap-4 border-t border-gray-100 bg-white p-4"
         style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
         <View className="h-14 flex-row items-center rounded-2xl border border-gray-200 bg-gray-50 p-1">
           <TouchableOpacity
             onPress={handleMinus}
-            className="h-10 w-10 items-center justify-center rounded-xl border border-gray-100 bg-white shadow-sm active:bg-gray-100">
+            className="h-10 w-10 items-center justify-center rounded-xl border border-gray-100 bg-white active:bg-gray-100">
             <Minus size={16} color={quantity === 0 ? '#DC2626' : '#4B5563'} />
           </TouchableOpacity>
 
@@ -204,7 +206,7 @@ export default function MenuDetailScreen({ route, navigation }: any) {
 
           <TouchableOpacity
             onPress={handlePlus}
-            className="h-10 w-10 items-center justify-center rounded-xl border border-gray-100 bg-white shadow-sm active:bg-gray-100">
+            className="h-10 w-10 items-center justify-center rounded-xl border border-gray-100 bg-white active:bg-gray-100">
             <Plus size={16} color="#4B5563" />
           </TouchableOpacity>
         </View>

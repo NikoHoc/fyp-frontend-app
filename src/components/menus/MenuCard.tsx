@@ -45,7 +45,7 @@ export default function MenuCard({ menu, onPress, isDepotOpen, depotId }: MenuCa
 
       <View className="absolute bottom-3 right-3">
         {currentQty > 0 ? (
-          <View className="bg-bakso-primary rounded-full min-w-[32px] h-8 px-2 items-center justify-center shadow-sm">
+          <View className="bg-bakso-primary rounded-full min-w-[32px] h-8 px-2 items-center justify-center">
             <Text className="text-white text-xs font-black">{currentQty}</Text>
           </View>
         ) : (

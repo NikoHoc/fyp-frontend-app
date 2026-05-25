@@ -42,7 +42,7 @@ export default function DepotInfoCard({ depot }: Props) {
   };
 
   return (
-    <View className="mb-6 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mx-4 mt-2">
+    <View className="mb-6 bg-white rounded-2xl border border-gray-100 overflow-hidden mx-4 mt-2">
       <View className={`w-full py-2 items-center ${depot.is_open ? 'bg-green-500' : 'bg-red-500'}`}>
         <Text className="text-white font-black text-[10px] tracking-widest uppercase">
           {depot.is_open ? '🟢 SEDANG BUKA - BISA DIPESAN' : '🔴 SEDANG TUTUP'}
