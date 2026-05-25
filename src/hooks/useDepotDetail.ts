@@ -24,7 +24,7 @@ export const useDepotDetail = (depotId: number) => {
     fetchDepot();
 
     const channel = supabaseRealtime
-      .channel(`realtime-depot-${depotId}`)
+      .channel(`realtime-depot-${depotId}-${Math.random()}`)
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'depots', filter: `id=eq.${depotId}` },

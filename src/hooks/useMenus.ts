@@ -49,7 +49,7 @@ export const useMenus = (depotId: number) => {
     fetchMenus();
 
     const channel = supabaseRealtime
-      .channel(`realtime-depot-menus-${depotId}`)
+      .channel(`realtime-depot-menus-${depotId}-${Math.random()}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'depot_menus', filter: `depot_id=eq.${depotId}` },

@@ -28,7 +28,7 @@ export const useCustomerCart = () => {
     try {
       await cartService.addOrUpdateItem(depotId, menuId, quantity, isHalfPortion, note, cartItemId);
       
-      // fetchCart(); 
+      fetchCart(); 
       
       setIsLoading(false);
       return { success: true };
@@ -55,7 +55,7 @@ export const useCustomerCart = () => {
       await cartService.clearCart();
       await cartService.addOrUpdateItem(depotId, menuId, quantity, isHalfPortion, note, cartItemId);
       
-      // fetchCart();
+      fetchCart();
       
       setIsLoading(false);
       return { success: true };

@@ -35,8 +35,6 @@ export default function DepotMenuScreen() {
   const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null);
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
 
-  // Fetch cart setiap kali screen ini aktif kembali (termasuk setelah goBack dari MenuDetailScreen).
-  // Ini yang memastikan setCart tidak dipanggil pada komponen yang sudah unmount.
   useFocusEffect(
     useCallback(() => {
       if (user?.role === 'pelanggan') {
@@ -79,6 +77,8 @@ export default function DepotMenuScreen() {
 
   const hasActiveCartHere =
     cart && cart.depot_id === Number(depotId) && cart.total_items && cart.total_items > 0;
+
+  const isDepotOpen = depot?.is_open ?? false;
 
   if (isDepotLoading) {
     return (
@@ -149,7 +149,7 @@ export default function DepotMenuScreen() {
             <MenuCard
               menu={item}
               depotId={depotId}
-              isDepotOpen={depot?.is_open ?? false}
+              isDepotOpen={isDepotOpen}
               onPress={() => handleMenuClick(item)}
             />
           )}
@@ -165,8 +165,13 @@ export default function DepotMenuScreen() {
           style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
           <TouchableOpacity
             activeOpacity={0.8}
+            disabled={!isDepotOpen}
             onPress={() => navigation.navigate('CartScreen')}
-            className="w-full flex-row items-center justify-between rounded-2xl bg-bakso-primary p-4">
+            className={`w-full flex-row items-center justify-between rounded-2xl p-4 ${
+              isDepotOpen
+                ? 'bg-bakso-primary'
+                : 'bg-red-300'
+            }`}>
             <View className="flex-1 flex-row items-center">
               <View className="mr-3 rounded-xl bg-white/20 p-2.5">
                 <ShoppingBag size={20} color="#FFF" />
@@ -180,8 +185,10 @@ export default function DepotMenuScreen() {
                 </Text>
               </View>
             </View>
-            <View className="rounded-xl bg-white px-4 py-2.5">
-              <Text className="text-sm font-black text-bakso-primary">Keranjang</Text>
+            <View className={`rounded-xl px-4 py-2.5 ${isDepotOpen ? 'bg-white' : 'bg-white/30'}`}>
+              <Text className={`text-sm font-black ${isDepotOpen ? 'text-bakso-primary' : 'text-white'}`}>
+                Keranjang
+              </Text>
             </View>
           </TouchableOpacity>
         </View>
