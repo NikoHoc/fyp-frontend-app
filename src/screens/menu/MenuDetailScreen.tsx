@@ -12,14 +12,14 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Minus, Plus, MessageSquare } from 'lucide-react-native';
 import { CartContext } from '../../context/CartContext';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '@/types/navigation';
+// import { useRoute, useNavigation } from '@react-navigation/native';
+// import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+// import { RootStackParamList } from '@/types/navigation';
 
-export default function MenuDetailScreen() {
-  const route = useRoute<any>();
+export default function MenuDetailScreen({ route, navigation }: any) {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  // const route = useRoute<any>();
+  // const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const { menu, depotId, mode, existingItem } = route.params;
   const { updateItem, clearCartAndRetry, isLoading } = useContext(CartContext);
@@ -53,7 +53,9 @@ export default function MenuDetailScreen() {
 
   const handleActionCart = async () => {
     const cartItemId = mode === 'edit' ? existingItem?.id : undefined;
-    const result = await updateItem(depotId, menu.id, quantity, isHalfPortion, note, cartItemId);
+    const finalHalfPortion = hasHalfPortion ? isHalfPortion : false;
+    
+    const result = await updateItem(depotId, menu.id, quantity, finalHalfPortion, note, cartItemId);
 
     if (result.success) {
       navigation.goBack();

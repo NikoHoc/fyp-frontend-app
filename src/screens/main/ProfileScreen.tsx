@@ -1,13 +1,22 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AuthContext } from '../../context/AuthContext';
 import LoginReminder from '../../components/auth/LoginReminder';
 import { Mail, Phone, Calendar, ShoppingBag, LogOut } from 'lucide-react-native';
+import { formatDate } from '@/utils/format';
+import { useCustomerProfile } from '@/hooks/useCustomerProfile';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, logout } = useContext(AuthContext);
+  const { profile, isLoading, fetchProfile } = useCustomerProfile();
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
 
   const handleLogout = () => {
     Alert.alert(
@@ -27,12 +36,6 @@ export default function ProfileScreen() {
     );
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "Mei 2026";
-    const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
-  };
-
   return (
     <View className="flex-1 bg-gray-50" style={{ paddingTop: insets.top }}>
       <View className="bg-white border-b border-gray-100 px-6 py-5 shadow-sm flex-row items-center justify-between">
@@ -47,7 +50,7 @@ export default function ProfileScreen() {
           <View className="bg-white rounded-3xl p-6 items-center border border-gray-100 shadow-sm mb-4">
             <View className="w-20 h-20 bg-bakso-primary rounded-full items-center justify-center mb-3">
               <Text className="text-white text-3xl font-black">
-                {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+                {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : 'U'}
               </Text>
             </View>
             <Text className="text-xl font-black text-gray-800">{user.full_name}</Text>
@@ -58,7 +61,7 @@ export default function ProfileScreen() {
               <ShoppingBag size={20} color="#DC2626" className="mb-1" />
               <Text className="text-[10px] font-bold text-gray-400 uppercase">Total Pesanan</Text>
               <Text className="text-lg font-black text-gray-800 mt-0.5">
-                {(user as any).total_transactions || 12}x
+                {profile?.total_transactions || 0}x
               </Text>
             </View>
             
@@ -66,7 +69,7 @@ export default function ProfileScreen() {
               <Calendar size={20} color="#F59E0B" className="mb-1" />
               <Text className="text-[10px] font-bold text-gray-400 uppercase">Bergabung Sejak</Text>
               <Text className="text-xs font-black text-gray-800 mt-2 text-center">
-                {formatDate((user as any).created_at)}
+                {formatDate(profile?.created_at)}
               </Text>
             </View>
           </View>
@@ -78,7 +81,7 @@ export default function ProfileScreen() {
               <Mail size={16} color="#9CA3AF" />
               <View className="ml-4">
                 <Text className="text-[10px] font-bold text-gray-400 uppercase">Alamat Email</Text>
-                <Text className="text-sm font-semibold text-gray-700 mt-0.5">{user.email}</Text>
+                <Text className="text-sm font-semibold text-gray-700 mt-0.5">{profile?.email}</Text>
               </View>
             </View>
 
@@ -86,7 +89,7 @@ export default function ProfileScreen() {
               <Phone size={16} color="#9CA3AF" />
               <View className="ml-4">
                 <Text className="text-[10px] font-bold text-gray-400 uppercase">Nomor Handphone</Text>
-                <Text className="text-sm font-semibold text-gray-700 mt-0.5">{user.phone_number || '-'}</Text>
+                <Text className="text-sm font-semibold text-gray-700 mt-0.5">{profile?.phone_number || '-'}</Text>
               </View>
             </View>
           </View>

@@ -16,12 +16,6 @@ export const useCustomerCart = () => {
     }
   }, []);
 
-  /**
-   * Returns:
-   *   { success: true }                        — item berhasil diupdate
-   *   { success: false, conflict: true }        — ada item di cabang lain (409)
-   *   { success: false }                        — error lain
-   */
   const updateItem = async (
     depotId: number,
     menuId: number,
@@ -33,13 +27,14 @@ export const useCustomerCart = () => {
     setIsLoading(true);
     try {
       await cartService.addOrUpdateItem(depotId, menuId, quantity, isHalfPortion, note, cartItemId);
-      await fetchCart();
+      
+      fetchCart(); 
+      
       setIsLoading(false);
       return { success: true };
     } catch (error: any) {
       setIsLoading(false);
       if (error.response?.status === 409) {
-        // Kembalikan ke caller (screen) agar Alert dijalankan dalam konteks navigasi yang benar
         return { success: false, conflict: true };
       }
       Alert.alert("Error", "Gagal memperbarui keranjang");
@@ -59,7 +54,9 @@ export const useCustomerCart = () => {
     try {
       await cartService.clearCart();
       await cartService.addOrUpdateItem(depotId, menuId, quantity, isHalfPortion, note, cartItemId);
-      await fetchCart();
+      
+      fetchCart();
+      
       setIsLoading(false);
       return { success: true };
     } catch (error) {
