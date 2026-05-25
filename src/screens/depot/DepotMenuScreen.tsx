@@ -30,7 +30,6 @@ export default function DepotMenuScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const { depotId, depotName } = route.params;
-
   const { cart } = useContext(CartContext);
   const { user } = useContext(AuthContext);
   const { menus, categories, isLoading: isMenusLoading, refetch: refetchMenus } = useMenus(depotId);
@@ -45,10 +44,8 @@ export default function DepotMenuScreen() {
   const filteredData = useMemo(() => {
     let filteredMenu = menus.filter((menu) => {
       const categoryName = menu.categories?.name || 'Lainnya';
-
       const matchesSearch = menu.name.toLowerCase().includes(search.toLowerCase());
       const matchesCat = selectedCat === 'Semua' || categoryName === selectedCat;
-
       return matchesSearch && matchesCat;
     });
 
@@ -66,21 +63,25 @@ export default function DepotMenuScreen() {
   }, [menus, search, selectedCat]);
 
   const handleMenuClick = (menu: Menu) => {
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
+
     const existingVariants = cart?.items?.filter(i => i.menu_id === menu.id) || [];
-    
+
     if (existingVariants.length > 0 && cart?.depot_id === Number(depotId)) {
-      // Buka Modal jika sudah ada pesanan
       setSelectedMenu(menu);
       setIsVariantModalOpen(true);
     } else {
-      // Langsung ke Detail Screen mode Tambah
       navigation.navigate('MenuDetailScreen', { menu, depotId: Number(depotId), mode: 'add' });
     }
   };
+
   const hasActiveCartHere =
     cart && cart.depot_id === Number(depotId) && cart.total_items && cart.total_items > 0;
-  
-    if (isDepotLoading) {
+
+  if (isDepotLoading) {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator className="mt-10" size="large" color="#DC2626" />
@@ -88,7 +89,7 @@ export default function DepotMenuScreen() {
       </View>
     );
   }
-  
+
   return (
     <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
       <View className="flex-row items-center border-b border-gray-100 px-4 py-4">
@@ -114,8 +115,7 @@ export default function DepotMenuScreen() {
           <TouchableOpacity
             onPress={() => setSelectedCat('Semua')}
             className={`mr-2 rounded-xl px-5 py-2 ${selectedCat === 'Semua' ? 'bg-bakso-primary' : 'bg-gray-100'}`}>
-            <Text
-              className={`text-sm font-bold ${selectedCat === 'Semua' ? 'text-white' : 'text-gray-600'}`}>
+            <Text className={`text-sm font-bold ${selectedCat === 'Semua' ? 'text-white' : 'text-gray-600'}`}>
               Semua
             </Text>
           </TouchableOpacity>
@@ -124,8 +124,7 @@ export default function DepotMenuScreen() {
               key={c.id}
               onPress={() => setSelectedCat(c.name)}
               className={`mr-2 rounded-xl px-5 py-2 ${selectedCat === c.name ? 'bg-bakso-primary' : 'bg-gray-100'}`}>
-              <Text
-                className={`text-sm font-bold ${selectedCat === c.name ? 'text-white' : 'text-gray-600'}`}>
+              <Text className={`text-sm font-bold ${selectedCat === c.name ? 'text-white' : 'text-gray-600'}`}>
                 {c.name}
               </Text>
             </TouchableOpacity>
@@ -189,13 +188,13 @@ export default function DepotMenuScreen() {
                 </Text>
               </View>
             </View>
-
             <View className="rounded-xl bg-white px-4 py-2.5">
               <Text className="text-sm font-black text-bakso-primary">Keranjang</Text>
             </View>
           </TouchableOpacity>
         </View>
       )}
+
       <MenuVariantModal
         isVisible={isVariantModalOpen}
         onClose={() => setIsVariantModalOpen(false)}
@@ -203,22 +202,22 @@ export default function DepotMenuScreen() {
         existingItems={cart?.items?.filter(i => i.menu_id === selectedMenu?.id) || []}
         onEditVariant={(item) => {
           setIsVariantModalOpen(false);
-          if (selectedMenu) { 
-            navigation.navigate('MenuDetailScreen', { 
-              menu: selectedMenu, 
-              depotId: Number(depotId), 
+          if (selectedMenu) {
+            navigation.navigate('MenuDetailScreen', {
+              menu: selectedMenu,
+              depotId: Number(depotId),
               mode: 'edit',
-              existingItem: item 
+              existingItem: item
             });
           }
         }}
         onAddNewVariant={() => {
           setIsVariantModalOpen(false);
-          if (selectedMenu) { 
-            navigation.navigate('MenuDetailScreen', { 
-              menu: selectedMenu, 
-              depotId: Number(depotId), 
-              mode: 'add' 
+          if (selectedMenu) {
+            navigation.navigate('MenuDetailScreen', {
+              menu: selectedMenu,
+              depotId: Number(depotId),
+              mode: 'add'
             });
           }
         }}

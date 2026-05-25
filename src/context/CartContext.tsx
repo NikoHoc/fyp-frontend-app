@@ -7,7 +7,8 @@ interface CartContextType {
   cart: CustomerCart | null;
   isLoading: boolean;
   fetchCart: () => Promise<void>;
-  updateItem: (depotId: number, menuId: number, quantity: number, isHalfPortion?: boolean, note?: string, cartItemId?: number) => Promise<boolean>;
+  updateItem: (depotId: number, menuId: number, quantity: number, isHalfPortion?: boolean, note?: string, cartItemId?: number) => Promise<{ success: boolean; conflict?: boolean }>;
+  clearCartAndRetry: (depotId: number, menuId: number, quantity: number, isHalfPortion: boolean, note: string, cartItemId?: number) => Promise<{ success: boolean }>;
   clearCart: () => Promise<any>;
   getItemQuantity: (menuId: number, depotId: number) => number;
 }
@@ -21,12 +22,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (user?.role === 'pelanggan') {
       cartData.fetchCart();
+    } else {
+      cartData.setCart(null);
     }
   }, [user]);
 
   const getItemQuantity = (menuId: number, depotId: number) => {
-    if (!cartData.cart || !cartData.cart.items || cartData.cart.depot_id !== depotId) return 0;
-    
+    if (!user || !cartData.cart || !cartData.cart.items || cartData.cart.depot_id !== depotId) return 0;
+
     return cartData.cart.items
       .filter((item) => item.menu_id === menuId)
       .reduce((total, item) => total + item.quantity, 0);

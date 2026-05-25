@@ -18,10 +18,10 @@ export default function App() {
     async function prepare() {
       try {
         await SplashScreen.hideAsync();
-        
-        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       } catch (e) {
-        console.warn("Gagal memuat persiapan aplikasi:", e);
+        console.warn('Gagal memuat persiapan aplikasi:', e);
       } finally {
         setAppIsReady(true);
       }
@@ -33,8 +33,8 @@ export default function App() {
   if (!appIsReady) {
     return (
       <View style={styles.splashContainer}>
-        <Image 
-          source={require('./assets/images/logo_sapi.png')} 
+        <Image
+          source={require('./assets/images/logo_sapi.png')}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -46,14 +46,14 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <CartProvider>
-          <NavigationContainer>
+      <NavigationContainer>
+        <AuthProvider>
+          <CartProvider>
             <RootNavigator />
-          </NavigationContainer>
-          <StatusBar style="auto" />
-        </CartProvider>
-      </AuthProvider>
+            <StatusBar style="auto" />
+          </CartProvider>
+        </AuthProvider>
+      </NavigationContainer>
     </SafeAreaProvider>
   );
 }

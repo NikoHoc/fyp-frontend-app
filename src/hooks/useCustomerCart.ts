@@ -16,46 +16,66 @@ export const useCustomerCart = () => {
     }
   }, []);
 
-  const updateItem = async (depotId: number, menuId: number, quantity: number, isHalfPortion: boolean = false, note: string = '', cartItemId?: number) => {
+  /**
+   * Returns:
+   *   { success: true }                        — item berhasil diupdate
+   *   { success: false, conflict: true }        — ada item di cabang lain (409)
+   *   { success: false }                        — error lain
+   */
+  const updateItem = async (
+    depotId: number,
+    menuId: number,
+    quantity: number,
+    isHalfPortion: boolean = false,
+    note: string = '',
+    cartItemId?: number
+  ): Promise<{ success: boolean; conflict?: boolean }> => {
     setIsLoading(true);
     try {
       await cartService.addOrUpdateItem(depotId, menuId, quantity, isHalfPortion, note, cartItemId);
-      
-      fetchCart(); 
+      await fetchCart();
       setIsLoading(false);
-      
-      return true;
+      return { success: true };
     } catch (error: any) {
       setIsLoading(false);
       if (error.response?.status === 409) {
-        Alert.alert(
-          "Pindah Cabang?",
-          "Anda memiliki pesanan di cabang lain. Ingin menghapus keranjang lama dan memesan dari cabang ini?",
-          [
-            { text: "Batal", style: "cancel" },
-            { 
-              text: "Ya, Hapus & Ganti", 
-              style: "destructive",
-              onPress: async () => {
-                setIsLoading(true);
-                await cartService.clearCart();
-                await updateItem(depotId, menuId, quantity, isHalfPortion, note, cartItemId);
-              }
-            }
-          ]
-        );
-      } else {
-        Alert.alert("Error", "Gagal memperbarui keranjang");
+        // Kembalikan ke caller (screen) agar Alert dijalankan dalam konteks navigasi yang benar
+        return { success: false, conflict: true };
       }
-      return false;
+      Alert.alert("Error", "Gagal memperbarui keranjang");
+      return { success: false };
+    }
+  };
+
+  const clearCartAndRetry = async (
+    depotId: number,
+    menuId: number,
+    quantity: number,
+    isHalfPortion: boolean,
+    note: string,
+    cartItemId?: number
+  ): Promise<{ success: boolean }> => {
+    setIsLoading(true);
+    try {
+      await cartService.clearCart();
+      await cartService.addOrUpdateItem(depotId, menuId, quantity, isHalfPortion, note, cartItemId);
+      await fetchCart();
+      setIsLoading(false);
+      return { success: true };
+    } catch (error) {
+      setIsLoading(false);
+      Alert.alert("Error", "Gagal memperbarui keranjang");
+      return { success: false };
     }
   };
 
   return {
     cart,
+    setCart,
     isLoading,
     fetchCart,
     updateItem,
+    clearCartAndRetry,
     clearCart: cartService.clearCart
   };
 };
