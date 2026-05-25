@@ -8,6 +8,11 @@ export const useDepotDetail = (depotId: number) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!depotId || depotId === 0) {
+      setDepot(null);
+      setIsLoading(false);
+      return;
+    }
     const fetchDepot = async () => {
       try {
         setIsLoading(true);

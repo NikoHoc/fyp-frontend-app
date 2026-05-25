@@ -24,13 +24,18 @@ export const useCustomerCart = () => {
     note: string = '',
     cartItemId?: number
   ): Promise<{ success: boolean; conflict?: boolean }> => {
-    setIsLoading(true);
+    if (!cartItemId) {
+      setIsLoading(true);
+    }
     try {
       await cartService.addOrUpdateItem(depotId, menuId, quantity, isHalfPortion, note, cartItemId);
       
       fetchCart(); 
       
-      setIsLoading(false);
+      if (!cartItemId) {
+        setIsLoading(false);
+      }
+      
       return { success: true };
     } catch (error: any) {
       setIsLoading(false);
