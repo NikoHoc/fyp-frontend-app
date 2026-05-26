@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator, Ale
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ChevronLeft, Trash2, Plus, Minus, Store, Bike, AlertCircle, ShoppingBag, MapPin, MessageSquare } from 'lucide-react-native';
+import { ChevronLeft, Trash2, Plus, Minus, Store, Bike, AlertCircle, ShoppingBag, MapPin } from 'lucide-react-native';
 import { CartContext } from '@/context/CartContext';
 import { RootStackParamList } from '@/types/navigation';
 import { CartItem } from '@/types';
@@ -137,54 +137,51 @@ export default function CartScreen() {
         <View className="bg-white px-4 py-5 mb-4 border-y border-gray-100 shadow-sm">
           <Text className="text-sm font-black text-gray-800 uppercase tracking-wider mb-4">Detail Pesanan</Text>
           {cart.items.map((item, index) => (
-            <View key={item.id} className={`py-5 relative ${index !== cart.items.length - 1 ? 'border-b border-gray-100' : ''}`}>
-              <TouchableOpacity 
-                onPress={() => handleRemove(item)}
-                className="absolute top-4 right-0 p-2 z-10 bg-white rounded-full active:bg-red-50"
-              >
-                <Trash2 size={20} color="#DC2626" />
-              </TouchableOpacity>
-              <View className="flex-row pr-10">
-                <Image 
-                  source={{ uri: item.image_url || 'https://via.placeholder.com/150' }} 
-                  className="w-20 h-20 rounded-xl bg-gray-100 mr-4"
-                  resizeMode="cover"
-                />
-                <View className="flex-1 justify-center">
-                  <Text className="text-base font-bold text-gray-800 mb-0.5">{item.name}</Text>
-                  <Text className="text-xs font-medium text-gray-500 mb-2">
-                    {item.is_half_portion ? '1/2 Porsi' : 'Porsi Utuh'}
+            <View key={item.id} className={`py-4 flex-row gap-3 ${index !== cart.items.length - 1 ? 'border-b border-gray-100' : ''}`}>
+              <Image 
+                source={{ uri: item.image_url || 'https://via.placeholder.com/150' }} 
+                className="w-[72px] h-[72px] rounded-xl bg-gray-100"
+                resizeMode="cover"
+              />
+              <View className="flex-1 justify-center">
+                <Text className="text-sm font-bold text-gray-800">{item.name}</Text>
+                <Text className="text-xs text-gray-500 mt-0.5">
+                  {item.is_half_portion ? '1/2 Porsi' : 'Porsi Utuh'}
+                </Text>
+                {item.note ? (
+                  <Text className="text-xs font-bold text-amber-500 mt-0.5" numberOfLines={2}>
+                    Catatan: {item.note}
                   </Text>
-                  <Text className="text-sm font-black text-bakso-primary">
-                    Rp {item.price.toLocaleString('id-ID')}
-                  </Text>
-                </View>
+                ) : null}
+                <Text className="text-sm font-black text-bakso-primary mt-1">
+                  Rp {item.price.toLocaleString('id-ID')}
+                </Text>
               </View>
+              <View className="items-end justify-between">
+                <TouchableOpacity 
+                  onPress={() => handleRemove(item)}
+                  className="w-8 h-8 items-center justify-center rounded-lg bg-red-50 border border-red-200 active:bg-red-100"
+                >
+                  <Trash2 size={16} color="#DC2626" />
+                </TouchableOpacity>
 
-              {item.note ? (
-                <View className="bg-orange-50 p-3 rounded-xl mt-3 flex-row items-start border border-orange-100">
-                  <MessageSquare size={14} color="#F59E0B" style={{ marginTop: 2, marginRight: 6 }} />
-                  <Text className="text-xs text-orange-800 flex-1 leading-relaxed">Catatan: {item.note}</Text>
-                </View>
-              ) : null}
-              <View className="flex-row justify-end mt-4">
-                <View className="flex-row items-center border border-gray-200 bg-gray-50 rounded-xl p-1">
+                <View className="flex-row items-center border border-gray-200 bg-gray-50 rounded-xl p-0.5">
                   <TouchableOpacity 
                     onPress={() => handleDecrease(item)}
-                    className="w-8 h-8 items-center justify-center rounded-lg bg-white shadow-sm border border-gray-100 active:bg-gray-100"
+                    className="w-7 h-7 items-center justify-center rounded-lg bg-white border border-gray-100 active:bg-gray-100"
                   >
-                    <Minus size={14} color={item.quantity <= 1 ? '#D1D5DB' : '#4B5563'} />
+                    <Minus size={12} color={item.quantity <= 1 ? '#D1D5DB' : '#4B5563'} />
                   </TouchableOpacity>
                   
-                  <Text className="text-sm font-black text-gray-800 w-10 text-center">
+                  <Text className="text-sm font-black text-gray-800 w-8 text-center">
                     {item.quantity}
                   </Text>
                   
                   <TouchableOpacity 
                     onPress={() => handleIncrease(item)}
-                    className="w-8 h-8 items-center justify-center rounded-lg bg-white shadow-sm border border-gray-100 active:bg-gray-100"
+                    className="w-7 h-7 items-center justify-center rounded-lg bg-white border border-gray-100 active:bg-gray-100"
                   >
-                    <Plus size={14} color="#4B5563" />
+                    <Plus size={12} color="#4B5563" />
                   </TouchableOpacity>
                 </View>
               </View>
