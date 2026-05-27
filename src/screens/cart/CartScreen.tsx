@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -8,6 +8,7 @@ import { CartContext } from '@/context/CartContext';
 import { RootStackParamList } from '@/types/navigation';
 import { CartItem } from '@/types';
 import { useDepotDetail } from '@/hooks/useDepotDetail';
+import { supabaseRealtime } from '@/config/supabaseClient';
 
 export default function CartScreen() {
   const insets = useSafeAreaInsets();
@@ -17,6 +18,42 @@ export default function CartScreen() {
   const { depot, isLoading: isDepotLoading } = useDepotDetail(cart?.depot_id ?? 0);
 
   const [pickupMethod, setPickupMethod] = useState<'self_pickup' | 'self_courier'>('self_pickup');
+
+  useEffect(() => {
+    if (depot && !isDepotLoading && !depot.is_open) {
+      Alert.alert(
+        "Depot Tutup",
+        "Maaf, depot ini sedang tutup. Anda tidak dapat melanjutkan pemesanan saat ini.",
+        [{ text: "Kembali", onPress: () => navigation.goBack() }]
+      );
+    }
+  }, [depot, isDepotLoading, navigation]);
+
+  useEffect(() => {
+    if (!cart?.depot_id) return;
+
+    const channel = supabaseRealtime
+      .channel(`realtime-cart-menus-${cart.depot_id}-${Math.random()}`)
+      .on(
+        'postgres_changes',
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'depot_menus', 
+          filter: `depot_id=eq.${cart.depot_id}` 
+        },
+        () => {
+          fetchCart();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabaseRealtime.removeChannel(channel);
+    };
+  }, [cart?.depot_id, fetchCart]);
+
+  const hasOutOfStockItems = cart?.items?.some((item: any) => item.is_available === false);
 
   if (!cart || !cart.items || cart.items.length === 0) {
     return (
@@ -136,57 +173,76 @@ export default function CartScreen() {
         )}
         <View className="bg-white px-4 py-5 mb-4 border-y border-gray-100 shadow-sm">
           <Text className="text-sm font-black text-gray-800 uppercase tracking-wider mb-4">Detail Pesanan</Text>
-          {cart.items.map((item, index) => (
-            <View key={item.id} className={`py-4 flex-row gap-3 ${index !== cart.items.length - 1 ? 'border-b border-gray-100' : ''}`}>
-              <Image 
-                source={{ uri: item.image_url || 'https://via.placeholder.com/150' }} 
-                className="w-[72px] h-[72px] rounded-xl bg-gray-100"
-                resizeMode="cover"
-              />
-              <View className="flex-1 justify-center">
-                <Text className="text-sm font-bold text-gray-800">{item.name}</Text>
-                <Text className="text-xs text-gray-500 mt-0.5">
-                  {item.is_half_portion ? '1/2 Porsi' : 'Porsi Utuh'}
-                </Text>
-                {item.note ? (
-                  <Text className="text-xs font-bold text-amber-500 mt-0.5" numberOfLines={2}>
-                    Catatan: {item.note}
-                  </Text>
-                ) : null}
-                <Text className="text-sm font-black text-bakso-primary mt-1">
-                  Rp {item.price.toLocaleString('id-ID')}
-                </Text>
-              </View>
-              <View className="items-end justify-between">
-                <TouchableOpacity 
-                  onPress={() => handleRemove(item)}
-                  className="w-8 h-8 items-center justify-center rounded-lg bg-red-50 border border-red-200 active:bg-red-100"
-                >
-                  <Trash2 size={16} color="#DC2626" />
-                </TouchableOpacity>
+          {cart.items.map((item, index) => {
+            const isOutOfStock = item.is_available === false;
 
-                <View className="flex-row items-center border border-gray-200 bg-gray-50 rounded-xl p-0.5">
-                  <TouchableOpacity 
-                    onPress={() => handleDecrease(item)}
-                    className="w-7 h-7 items-center justify-center rounded-lg bg-white border border-gray-100 active:bg-gray-100"
-                  >
-                    <Minus size={12} color={item.quantity <= 1 ? '#D1D5DB' : '#4B5563'} />
-                  </TouchableOpacity>
+            return (
+              <View key={item.id} className={`py-4 flex-row gap-3 relative ${index !== cart.items.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                <View className={`flex-row flex-1 gap-3 ${isOutOfStock ? 'opacity-40' : ''}`}>
+                  <View className="relative">
+                    <Image 
+                      source={{ uri: item.image_url || 'https://via.placeholder.com/150' }} 
+                      className="w-[72px] h-[72px] rounded-xl bg-gray-100"
+                      resizeMode="cover"
+                    />
+                    {isOutOfStock && (
+                      <View className="absolute inset-0 bg-black/60 items-center justify-center rounded-xl">
+                         <AlertCircle size={20} color="#FFF" />
+                      </View>
+                    )}
+                  </View>
                   
-                  <Text className="text-sm font-black text-gray-800 w-8 text-center">
-                    {item.quantity}
-                  </Text>
-                  
+                  <View className="flex-1 justify-center">
+                    <Text className="text-sm font-bold text-gray-800">{item.name}</Text>
+                    <Text className="text-xs text-gray-500 mt-0.5">
+                      {item.is_half_portion ? '1/2 Porsi' : 'Porsi Utuh'}
+                    </Text>
+                    {item.note ? (
+                      <Text className="text-xs font-bold text-amber-500 mt-0.5" numberOfLines={2}>
+                        Catatan: {item.note}
+                      </Text>
+                    ) : null}
+                    <Text className="text-sm font-black text-bakso-primary mt-1">
+                      Rp {item.price.toLocaleString('id-ID')}
+                    </Text>
+                  </View>
+                </View>
+                
+                <View className="items-end justify-between">
                   <TouchableOpacity 
-                    onPress={() => handleIncrease(item)}
-                    className="w-7 h-7 items-center justify-center rounded-lg bg-white border border-gray-100 active:bg-gray-100"
+                    onPress={() => handleRemove(item)}
+                    className={`w-8 h-8 items-center justify-center rounded-lg border active:bg-red-100 ${
+                      isOutOfStock ? 'bg-red-100 border-red-300' : 'bg-red-50 border-red-200'
+                    }`}
                   >
-                    <Plus size={12} color="#4B5563" />
+                    <Trash2 size={16} color="#DC2626" />
                   </TouchableOpacity>
+
+                  {isOutOfStock ? (
+                     <View className="bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 mt-2">
+                       <Text className="text-[10px] font-black text-red-600 uppercase tracking-wider">Habis</Text>
+                     </View>
+                  ) : (
+                    <View className="flex-row items-center border border-gray-200 bg-gray-50 rounded-xl p-0.5">
+                      <TouchableOpacity 
+                        onPress={() => handleDecrease(item)}
+                        className="w-7 h-7 items-center justify-center rounded-lg bg-white border border-gray-100 active:bg-gray-100"
+                      >
+                        <Minus size={12} color={item.quantity <= 1 ? '#D1D5DB' : '#4B5563'} />
+                      </TouchableOpacity>
+                      <Text className="text-sm font-black text-gray-800 w-8 text-center">{item.quantity}</Text>
+                      <TouchableOpacity 
+                        onPress={() => handleIncrease(item)}
+                        className="w-7 h-7 items-center justify-center rounded-lg bg-white border border-gray-100 active:bg-gray-100"
+                      >
+                        <Plus size={12} color="#4B5563" />
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </View>
               </View>
-            </View>
-          ))}
+            );
+          })}
         </View>
         <View className="bg-white px-4 py-5 mb-4 border-y border-gray-100 shadow-sm">
           <Text className="text-sm font-black text-gray-800 uppercase tracking-wider mb-4">Metode Pengambilan</Text>
@@ -251,12 +307,20 @@ export default function CartScreen() {
       >
         <TouchableOpacity 
           onPress={handleCheckout}
-          disabled={isLoading}
-          className="bg-bakso-primary w-full p-4 rounded-2xl flex-row items-center justify-between active:bg-red-700"
+          disabled={isLoading || hasOutOfStockItems}
+          className={`w-full p-4 rounded-2xl flex-row items-center justify-between ${
+            isLoading || hasOutOfStockItems ? 'bg-gray-400' : 'bg-bakso-primary active:bg-red-700'
+          }`}
         >
           {isLoading ? (
             <View className="flex-1 items-center justify-center">
                <ActivityIndicator color="#FFF" />
+            </View>
+          ) : hasOutOfStockItems ? (
+            <View className="flex-1 items-center justify-center py-1">
+              <Text className="text-white font-black text-sm uppercase tracking-wider">
+                Hapus Menu Habis Untuk Lanjut
+              </Text>
             </View>
           ) : (
             <>

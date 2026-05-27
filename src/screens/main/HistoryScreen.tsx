@@ -7,7 +7,7 @@ import { RootStackParamList } from '@/types/navigation';
 import { AuthContext } from '../../context/AuthContext';
 import LoginReminder from '../../components/auth/LoginReminder';
 import { ClipboardList, Clock, CheckCircle2, XCircle, ChevronRight } from 'lucide-react-native';
-import { useCustomerTransaction } from '@/hooks/useCustomerTransaction'; // 💡 Import hook baru
+import { useCustomerTransaction } from '@/hooks/useCustomerTransaction'; 
 import { supabaseRealtime } from '@/config/supabaseClient';
 
 type FilterStatus = 'Semua' | 'Berjalan' | 'Selesai' | 'Dibatalkan';
@@ -16,7 +16,7 @@ export default function HistoryScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = useContext(AuthContext);
-  const { fetchTransactions } = useCustomerTransaction(); // 💡 Menggunakan Hook
+  const { fetchTransactions } = useCustomerTransaction(); 
   
   const [activeFilter, setActiveFilter] = useState<FilterStatus>('Semua');
   const [orders, setOrders] = useState<any[]>([]);
@@ -37,7 +37,7 @@ export default function HistoryScreen() {
 
         return {
           id: trx.id,
-          displayId: `ONLINE-${trx.id.split('-')[0].toUpperCase()}`, // 💡 Perbaikan ONLINE-
+          displayId: `ONLINE-${trx.id.split('-')[0].toUpperCase()}`,
           depotName: trx.depot?.name || 'Depot Bakso Asli',
           date: new Date(trx.created_at).toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
           rawDate: new Date(trx.created_at).getTime(),
@@ -67,7 +67,6 @@ export default function HistoryScreen() {
     }, [user, loadHistory])
   );
 
-  // 💡 Realtime: Mendeteksi pesanan baru atau perubahan status milik user ini
   useEffect(() => {
     if (!user) return;
     const channel = supabaseRealtime

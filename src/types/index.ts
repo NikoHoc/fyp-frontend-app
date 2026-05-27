@@ -25,8 +25,8 @@ export interface CartItem {
   is_half_portion: boolean;
   note?: string;
   item_total: number;
+  is_available?: boolean;
 }
-
 export interface CustomerCart {
   id: string;
   customer_id: string;

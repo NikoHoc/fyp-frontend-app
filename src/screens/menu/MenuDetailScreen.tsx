@@ -12,14 +12,10 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Minus, Plus, MessageSquare } from 'lucide-react-native';
 import { CartContext } from '../../context/CartContext';
-// import { useRoute, useNavigation } from '@react-navigation/native';
-// import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-// import { RootStackParamList } from '@/types/navigation';
+
 
 export default function MenuDetailScreen({ route, navigation }: any) {
   const insets = useSafeAreaInsets();
-  // const route = useRoute<any>();
-  // const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const { menu, depotId, mode, existingItem } = route.params;
   const { updateItem, clearCartAndRetry, isLoading } = useContext(CartContext);

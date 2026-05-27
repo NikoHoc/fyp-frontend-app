@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AuthContext } from '../../context/AuthContext';
 import LoginReminder from '../../components/auth/LoginReminder';
@@ -46,7 +46,16 @@ export default function ProfileScreen() {
           <LoginReminder message="Silahkan login untuk mengakses profil anda." />
         </View>
       ) : (
-        <ScrollView className="flex-1 px-4 pt-4" showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          className="flex-1 px-4 pt-4" 
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl 
+              refreshing={isLoading} 
+              onRefresh={fetchProfile} 
+              colors={['#DC2626']} 
+            />
+          }>
           <View className="bg-white rounded-3xl p-6 items-center border border-gray-100 shadow-sm mb-4">
             <View className="w-20 h-20 bg-bakso-primary rounded-full items-center justify-center mb-3">
               <Text className="text-white text-3xl font-black">
