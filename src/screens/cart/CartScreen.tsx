@@ -1,7 +1,7 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ChevronLeft, Trash2, Plus, Minus, Store, Bike, AlertCircle, ShoppingBag, MapPin } from 'lucide-react-native';
 import { CartContext } from '@/context/CartContext';
@@ -18,6 +18,12 @@ export default function CartScreen() {
   const { depot, isLoading: isDepotLoading } = useDepotDetail(cart?.depot_id ?? 0);
 
   const [pickupMethod, setPickupMethod] = useState<'self_pickup' | 'self_courier'>('self_pickup');
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchCart();
+    }, [fetchCart])
+  );
 
   useEffect(() => {
     if (depot && !isDepotLoading && !depot.is_open) {
@@ -319,7 +325,7 @@ export default function CartScreen() {
           ) : hasOutOfStockItems ? (
             <View className="flex-1 items-center justify-center py-1">
               <Text className="text-white font-black text-sm uppercase tracking-wider">
-                Hapus Menu Habis Untuk Lanjut
+                Hapus item yang habis Untuk Lanjut
               </Text>
             </View>
           ) : (

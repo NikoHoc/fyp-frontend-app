@@ -41,6 +41,12 @@
         "image": "./assets/images/logo_sapi.png",
         "resizeMode": "contain",
         "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.nikohoc.baksoasli"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "1484fbd2-ffec-45a4-ab5c-0336f7a088c1"
       }
     }
   }
