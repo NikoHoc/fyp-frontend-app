@@ -1,5 +1,6 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import { Alert } from 'react-native';
 import api from '../services/api';
 import { User } from '../types';
 
@@ -12,6 +13,8 @@ interface AuthContextData {
 }
 
 export const AuthContext = createContext<AuthContextData>({} as AuthContextData);
+
+let isSessionExpiredAlertShown = false;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -51,7 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await SecureStore.deleteItemAsync('customerToken');
       await SecureStore.deleteItemAsync('customerData');
@@ -61,7 +64,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error("Gagal menghapus sesi logout:", error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const responseInterceptor = api.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        if (error.response && error.response.status === 401) {
+          if (!isSessionExpiredAlertShown) {
+            isSessionExpiredAlertShown = true;
+            Alert.alert(
+              "Sesi Berakhir",
+              "Sesi Anda telah habis. Silakan login kembali.",
+              [
+                {
+                  text: "OK",
+                  onPress: async () => {
+                    await logout();
+                    isSessionExpiredAlertShown = false;
+                  }
+                }
+              ],
+              { cancelable: false }
+            );
+          }
+          return new Promise(() => {});
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      api.interceptors.response.eject(responseInterceptor);
+    };
+  }, [logout]);
 
   return (
     <AuthContext.Provider value={{ user, token, isLoading, login, logout }}>

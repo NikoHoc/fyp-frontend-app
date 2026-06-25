@@ -1,7 +1,11 @@
 import api from './api';
 
 export const loginCustomer = async (data: any) => {
-  const response = await api.post('/auth/login', data);
+  const payload = { 
+    ...data, 
+    source: "mobile" 
+  };
+  const response = await api.post('/auth/login', payload);
   return response.data;
 };
 

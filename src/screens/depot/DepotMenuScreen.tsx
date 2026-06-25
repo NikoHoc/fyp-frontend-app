@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft, Search, ShoppingBag } from 'lucide-react-native';
+import { ArrowLeft, Search, ShoppingBag, AlertCircle } from 'lucide-react-native';
 import { AuthContext } from '@/context/AuthContext';
 import { useMenus } from '@/hooks/useMenus';
 import MenuCard from '@/components/menus/MenuCard';
@@ -78,13 +78,23 @@ export default function DepotMenuScreen() {
   const hasActiveCartHere =
     cart && cart.depot_id === Number(depotId) && cart.total_items && cart.total_items > 0;
 
+  // --- LOGIKA BARU UNTUK PAYMENT CONFIG & STATUS DEPOT ---
   const isDepotOpen = depot?.is_open ?? false;
+  
+  // Pengecekan apakah depot memiliki konfigurasi pembayaran
+  // (Pastikan backend Anda me-return 'payment_configs' saat mengambil detail depot)
+  const hasPaymentConfig = Array.isArray(depot?.payment_configs) 
+    ? depot?.payment_configs.length > 0 
+    : !!depot?.payment_configs;
+    
+  // Depot siap menerima pesanan jika BUKA dan PUNYA CONFIG PEMBAYARAN
+  const canOrder = isDepotOpen && hasPaymentConfig;
 
   if (isDepotLoading) {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator className="mt-10" size="large" color="#DC2626" />
-        <Text className="text-gray-400">Memuat data depot</Text>
+        <Text className="text-gray-400 mt-2">Memuat data depot...</Text>
       </View>
     );
   }
@@ -100,36 +110,49 @@ export default function DepotMenuScreen() {
         </Text>
       </View>
 
-      <View className="z-10 bg-white px-4 py-3">
-        <View className="mb-3 flex-row items-center rounded-xl bg-gray-100 px-4 py-3">
-          <Search size={18} color="#9CA3AF" />
-          <TextInput
-            placeholder="Cari menu favorit..."
-            className="ml-2 flex-1 text-sm"
-            value={search}
-            onChangeText={setSearch}
-          />
+      {/* --- BANNER NOTICE JIKA PAYMENT CONFIG BELUM ADA --- */}
+      {!hasPaymentConfig && (
+        <View className="bg-yellow-50 px-4 py-3 flex-row items-center border-b border-yellow-100">
+          <AlertCircle size={16} color="#CA8A04" />
+          <Text className="ml-2 text-xs font-medium text-yellow-800 flex-1 leading-tight">
+            Maaf, cabang ini belum dapat menerima pesanan online saat ini.
+          </Text>
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <TouchableOpacity
-            onPress={() => setSelectedCat('Semua')}
-            className={`mr-2 rounded-xl px-5 py-2 ${selectedCat === 'Semua' ? 'bg-bakso-primary' : 'bg-gray-100'}`}>
-            <Text className={`text-sm font-bold ${selectedCat === 'Semua' ? 'text-white' : 'text-gray-600'}`}>
-              Semua
-            </Text>
-          </TouchableOpacity>
-          {categories.map((c) => (
+      )}
+
+      {/* --- SEMBUNYIKAN SEARCH & KATEGORI JIKA MENU KOSONG TOTAL --- */}
+      {menus.length > 0 && (
+        <View className="z-10 bg-white px-4 py-3">
+          <View className="mb-3 flex-row items-center rounded-xl bg-gray-100 px-4 py-3">
+            <Search size={18} color="#9CA3AF" />
+            <TextInput
+              placeholder="Cari menu favorit..."
+              className="ml-2 flex-1 text-sm"
+              value={search}
+              onChangeText={setSearch}
+            />
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <TouchableOpacity
-              key={c.id}
-              onPress={() => setSelectedCat(c.name)}
-              className={`mr-2 rounded-xl px-5 py-2 ${selectedCat === c.name ? 'bg-bakso-primary' : 'bg-gray-100'}`}>
-              <Text className={`text-sm font-bold ${selectedCat === c.name ? 'text-white' : 'text-gray-600'}`}>
-                {c.name}
+              onPress={() => setSelectedCat('Semua')}
+              className={`mr-2 rounded-xl px-5 py-2 ${selectedCat === 'Semua' ? 'bg-bakso-primary' : 'bg-gray-100'}`}>
+              <Text className={`text-sm font-bold ${selectedCat === 'Semua' ? 'text-white' : 'text-gray-600'}`}>
+                Semua
               </Text>
             </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
+            {categories.map((c) => (
+              <TouchableOpacity
+                key={c.id}
+                onPress={() => setSelectedCat(c.name)}
+                className={`mr-2 rounded-xl px-5 py-2 ${selectedCat === c.name ? 'bg-bakso-primary' : 'bg-gray-100'}`}>
+                <Text className={`text-sm font-bold ${selectedCat === c.name ? 'text-white' : 'text-gray-600'}`}>
+                  {c.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
 
       {isMenusLoading ? (
         <ActivityIndicator className="mt-10" size="large" color="#DC2626" />
@@ -149,12 +172,26 @@ export default function DepotMenuScreen() {
             <MenuCard
               menu={item}
               depotId={depotId}
-              isDepotOpen={isDepotOpen}
+              isDepotOpen={canOrder} // Gunakan canOrder agar menu disabled jika tidak ada payment config
               onPress={() => handleMenuClick(item)}
             />
           )}
           ListEmptyComponent={
-            <Text className="mt-10 text-center text-gray-400">Menu tidak ditemukan.</Text>
+            <View className="mt-12 items-center justify-center px-4">
+              {/* --- PERUBAHAN TEKS KOSONG / COMING SOON --- */}
+              {menus.length === 0 ? (
+                <>
+                  <Text className="text-center text-lg font-black text-gray-800">Segera Hadir! 🚀</Text>
+                  <Text className="text-center text-sm font-medium text-gray-400 mt-2">
+                    Menu di cabang ini sedang dalam tahap persiapan. Nantikan kehadirannya!
+                  </Text>
+                </>
+              ) : (
+                <Text className="text-center font-medium text-gray-400">
+                  Menu &quot;{search}&quot; tidak ditemukan.
+                </Text>
+              )}
+            </View>
           }
         />
       )}
@@ -165,10 +202,10 @@ export default function DepotMenuScreen() {
           style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
           <TouchableOpacity
             activeOpacity={0.8}
-            disabled={!isDepotOpen}
+            disabled={!canOrder} // Nonaktifkan tombol keranjang jika tdk bisa order
             onPress={() => navigation.navigate('CartScreen')}
             className={`w-full flex-row items-center justify-between rounded-2xl p-4 ${
-              isDepotOpen
+              canOrder
                 ? 'bg-bakso-primary'
                 : 'bg-red-300'
             }`}>
@@ -185,8 +222,8 @@ export default function DepotMenuScreen() {
                 </Text>
               </View>
             </View>
-            <View className={`rounded-xl px-4 py-2.5 ${isDepotOpen ? 'bg-white' : 'bg-white/30'}`}>
-              <Text className={`text-sm font-black ${isDepotOpen ? 'text-bakso-primary' : 'text-white'}`}>
+            <View className={`rounded-xl px-4 py-2.5 ${canOrder ? 'bg-white' : 'bg-white/30'}`}>
+              <Text className={`text-sm font-black ${canOrder ? 'text-bakso-primary' : 'text-white'}`}>
                 Keranjang
               </Text>
             </View>
