@@ -24,7 +24,7 @@ export default function DepotMenuScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const { depotId, depotName } = route.params;
-  const { cart, fetchCart } = useContext(CartContext);
+  const { cart, fetchCart, setActiveDepotId } = useContext(CartContext);
   const { user } = useContext(AuthContext);
   const { menus, categories, isLoading: isMenusLoading, refetch: refetchMenus } = useMenus(depotId);
   const { depot, isLoading: isDepotLoading } = useDepotDetail(depotId);
@@ -36,13 +36,13 @@ export default function DepotMenuScreen() {
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
 
   useFocusEffect(
-    useCallback(() => {
-      if (user?.role === 'pelanggan') {
-        fetchCart();
-      }
-    }, [user, fetchCart])
-  );
-
+  useCallback(() => {
+    if (depotId) {
+      setActiveDepotId(Number(depotId));
+      fetchCart(Number(depotId));
+    }
+  }, [depotId])
+);
   const filteredData = useMemo(() => {
     const filteredMenu = menus.filter((menu) => {
       const categoryName = menu.categories?.name || 'Lainnya';
@@ -78,16 +78,12 @@ export default function DepotMenuScreen() {
   const hasActiveCartHere =
     cart && cart.depot_id === Number(depotId) && cart.total_items && cart.total_items > 0;
 
-  // --- LOGIKA BARU UNTUK PAYMENT CONFIG & STATUS DEPOT ---
   const isDepotOpen = depot?.is_open ?? false;
   
-  // Pengecekan apakah depot memiliki konfigurasi pembayaran
-  // (Pastikan backend Anda me-return 'payment_configs' saat mengambil detail depot)
   const hasPaymentConfig = Array.isArray(depot?.payment_configs) 
     ? depot?.payment_configs.length > 0 
     : !!depot?.payment_configs;
     
-  // Depot siap menerima pesanan jika BUKA dan PUNYA CONFIG PEMBAYARAN
   const canOrder = isDepotOpen && hasPaymentConfig;
 
   if (isDepotLoading) {
@@ -110,7 +106,6 @@ export default function DepotMenuScreen() {
         </Text>
       </View>
 
-      {/* --- BANNER NOTICE JIKA PAYMENT CONFIG BELUM ADA --- */}
       {!hasPaymentConfig && (
         <View className="bg-yellow-50 px-4 py-3 flex-row items-center border-b border-yellow-100">
           <AlertCircle size={16} color="#CA8A04" />
@@ -120,7 +115,6 @@ export default function DepotMenuScreen() {
         </View>
       )}
 
-      {/* --- SEMBUNYIKAN SEARCH & KATEGORI JIKA MENU KOSONG TOTAL --- */}
       {menus.length > 0 && (
         <View className="z-10 bg-white px-4 py-3">
           <View className="mb-3 flex-row items-center rounded-xl bg-gray-100 px-4 py-3">
@@ -172,13 +166,12 @@ export default function DepotMenuScreen() {
             <MenuCard
               menu={item}
               depotId={depotId}
-              isDepotOpen={canOrder} // Gunakan canOrder agar menu disabled jika tidak ada payment config
+              isDepotOpen={canOrder}
               onPress={() => handleMenuClick(item)}
             />
           )}
           ListEmptyComponent={
             <View className="mt-12 items-center justify-center px-4">
-              {/* --- PERUBAHAN TEKS KOSONG / COMING SOON --- */}
               {menus.length === 0 ? (
                 <>
                   <Text className="text-center text-lg font-black text-gray-800">Segera Hadir! 🚀</Text>
@@ -202,7 +195,7 @@ export default function DepotMenuScreen() {
           style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
           <TouchableOpacity
             activeOpacity={0.8}
-            disabled={!canOrder} // Nonaktifkan tombol keranjang jika tdk bisa order
+            disabled={!canOrder}
             onPress={() => navigation.navigate('CartScreen')}
             className={`w-full flex-row items-center justify-between rounded-2xl p-4 ${
               canOrder

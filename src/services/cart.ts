@@ -2,8 +2,8 @@ import api from './api';
 import { CustomerCart } from '../types';
 
 export const cartService = {
-  getCart: async (): Promise<CustomerCart | null> => {
-    const response = await api.get('/customers/me/cart');
+  getCart: async (depotId: number): Promise<CustomerCart | null> => {
+    const response = await api.get(`/customers/me/cart?depot_id=${depotId}`);
     return response.data.data;
   },
 
@@ -28,14 +28,15 @@ export const cartService = {
     return response.data;
   },
 
-  clearCart: async () => {
-    const response = await api.delete('/customers/me/cart');
+  clearCart: async (depotId: number) => {
+    const response = await api.delete(`/customers/me/cart?depot_id=${depotId}`);
     return response.data;
   },
 
-  checkoutCart: async (pickupMethod: string) => {
+  checkoutCart: async (pickupMethod: string, depotId: number) => {
     const response = await api.post('/customers/me/checkout', {
-      pickup_method: pickupMethod
+      pickup_method: pickupMethod,
+      depot_id: depotId
     });
     return response.data;
   }

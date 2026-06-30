@@ -14,16 +14,18 @@ export default function CartScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const { cart, updateItem, isLoading, fetchCart, checkout } = useContext(CartContext);
+  const { cart, updateItem, isLoading, fetchCart, checkout, activeDepotId } = useContext(CartContext);
   const { depot, isLoading: isDepotLoading } = useDepotDetail(cart?.depot_id ?? 0);
 
   const [pickupMethod, setPickupMethod] = useState<'self_pickup' | 'self_courier'>('self_pickup');
 
   useFocusEffect(
     useCallback(() => {
-      fetchCart();
-    }, [fetchCart])
-  );
+      if (activeDepotId) {
+        fetchCart(activeDepotId);
+      }
+    }, [activeDepotId])
+  )
 
   useEffect(() => {
     if (depot && !isDepotLoading && !depot.is_open) {
@@ -123,7 +125,8 @@ export default function CartScreen() {
         {
           text: "Ya, Kirim",
           onPress: async () => {
-            const response = await checkout(pickupMethod);
+            if (!cart?.depot_id) return;
+            const response = await checkout(pickupMethod, cart.depot_id);
             
             if (response.success && response.transaction_id) {
               navigation.reset({

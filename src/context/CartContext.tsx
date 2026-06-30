@@ -6,11 +6,12 @@ import { CustomerCart } from '../types';
 interface CartContextType {
   cart: CustomerCart | null;
   isLoading: boolean;
-  fetchCart: () => Promise<void>;
+  activeDepotId: number | null;
+  setActiveDepotId: (id: number | null) => void;
+  fetchCart: (depotId?: number) => Promise<void>;
   updateItem: (depotId: number, menuId: number, quantity: number, isHalfPortion?: boolean, note?: string, cartItemId?: number) => Promise<{ success: boolean; conflict?: boolean }>;
-  clearCartAndRetry: (depotId: number, menuId: number, quantity: number, isHalfPortion: boolean, note: string, cartItemId?: number) => Promise<{ success: boolean }>;
-  checkout: (pickupMethod: string) => Promise<{ success: boolean; transaction_id?: string }>;
-  clearCart: () => Promise<any>;
+  checkout: (pickupMethod: string, depotId: number) => Promise<{ success: boolean; transaction_id?: string }>;
+  clearCart: (depotId: number) => Promise<any>;
   getItemQuantity: (menuId: number, depotId: number) => number;
 }
 
@@ -21,19 +22,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const cartData = useCustomerCart();
 
   useEffect(() => {
-    if (user?.role === 'pelanggan') {
-      cartData.fetchCart();
-    } else {
+    if (user?.role !== 'pelanggan') {
       cartData.setCart(null);
+      cartData.setActiveDepotId(null);
     }
   }, [user]);
 
   const getItemQuantity = (menuId: number, depotId: number) => {
     if (!user || !cartData.cart || !cartData.cart.items || cartData.cart.depot_id !== depotId) return 0;
-
-    return cartData.cart.items
-      .filter((item) => item.menu_id === menuId)
-      .reduce((total, item) => total + item.quantity, 0);
+    
+    const item = cartData.cart.items.find(i => i.menu_id === menuId);
+    return item ? item.quantity : 0;
   };
 
   return (

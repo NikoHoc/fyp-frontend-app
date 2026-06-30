@@ -6,15 +6,22 @@ import { Alert } from 'react-native';
 export const useCustomerCart = () => {
   const [cart, setCart] = useState<CustomerCart | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeDepotId, setActiveDepotId] = useState<number | null>(null); // State baru
 
-  const fetchCart = useCallback(async () => {
+  const fetchCart = useCallback(async (depotId?: number) => {
+    const targetId = depotId || activeDepotId;
+    if (!targetId) {
+      setCart(null);
+      return;
+    }
+
     try {
-      const data = await cartService.getCart();
+      const data = await cartService.getCart(targetId);
       setCart(data);
     } catch (error) {
       console.error("Gagal mengambil keranjang:", error);
     }
-  }, []);
+  }, [activeDepotId]);
 
   const updateItem = async (
     depotId: number,
@@ -30,53 +37,36 @@ export const useCustomerCart = () => {
     try {
       await cartService.addOrUpdateItem(depotId, menuId, quantity, isHalfPortion, note, cartItemId);
       
-      fetchCart(); 
+      await fetchCart(depotId); 
       
-      if (!cartItemId) {
-        setIsLoading(false);
-      }
-
+      if (!cartItemId) setIsLoading(false);
       return { success: true };
     } catch (error: any) {
       setIsLoading(false);
-      if (error.response?.status === 409) {
-        return { success: false, conflict: true };
-      }
-      Alert.alert("Error", "Gagal memperbarui keranjang");
+      Alert.alert("Error", error.response?.data?.message || "Gagal memperbarui item");
       return { success: false };
     }
   };
 
-  const clearCartAndRetry = async (
-    depotId: number,
-    menuId: number,
-    quantity: number,
-    isHalfPortion: boolean,
-    note: string,
-    cartItemId?: number
-  ): Promise<{ success: boolean }> => {
+  const clearCart = async (depotId: number) => {
     setIsLoading(true);
     try {
-      await cartService.clearCart();
-      await cartService.addOrUpdateItem(depotId, menuId, quantity, isHalfPortion, note, cartItemId);
-      
-      fetchCart();
-      
+      await cartService.clearCart(depotId);
+      await fetchCart(depotId);
       setIsLoading(false);
       return { success: true };
     } catch (error) {
       setIsLoading(false);
-      Alert.alert("Error", "Gagal memperbarui keranjang");
       return { success: false };
     }
   };
 
-  const checkout = async (pickupMethod: string): Promise<{ success: boolean; transaction_id?: string }> => {
+  const checkout = async (pickupMethod: string, depotId: number): Promise<{ success: boolean; transaction_id?: string }> => {
     setIsLoading(true);
     try {
-      const response = await cartService.checkoutCart(pickupMethod);
+      const response = await cartService.checkoutCart(pickupMethod, depotId);
       if (response.success) {
-        await fetchCart();
+        await fetchCart(depotId);
         setIsLoading(false);
         return { success: true, transaction_id: response.data.transaction_id };
       }
@@ -95,8 +85,9 @@ export const useCustomerCart = () => {
     isLoading,
     fetchCart,
     updateItem,
-    clearCartAndRetry,
+    clearCart,
     checkout,
-    clearCart: cartService.clearCart
+    activeDepotId,
+    setActiveDepotId
   };
 };
